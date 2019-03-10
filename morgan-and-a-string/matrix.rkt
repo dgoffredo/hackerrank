@@ -4,7 +4,7 @@
          matrix?              ; predicate: whether its argument is a matrix
          matrix-set!          ; set a value within the matrix
          matrix-row-count     ; get number of rows in the matrix
-         matrix-column-count) ; get number of columns in the matric
+         matrix-column-count) ; get number of columns in the matrix
 
 ; Just for fun. Might end up using it as a lookup table if I figure out a good
 ; bottom-up method for this problem.
@@ -45,20 +45,19 @@
       ; Invoking a matrix with no arguments returns its inner vector of
       ; vectors. If that works, then we additionally require that all of the
       ; inner vectors have the same length as each other.
-      (and (vector? data)          ; vector of rows
-           (for/and ([item data])  ; each row is a vector
-             (vector? item))
-           ; all of the rows are the same length (or there are no rows)
-           (or (= (vector-length data) 0)
-               (let ([len (vector-length (vector-ref data 0))])
-                 (not (vector-find data
-                        (lambda (row)
-                          (not (= len (vector-length row))))))))))))
+      (and 
+        ; vector of rows
+        (vector? data)
+        ; all of the rows are the same length
+        (let ([len (vector-length (vector-ref data 0))])
+          (not (vector-find data
+                 (lambda (row)
+                   (not (= len (vector-length row)))))))))))
            
 (define (matrix-row-count matrix)
   (vector-length (matrix)))
 
 (define (matrix-column-count matrix)
   (match (matrix)
-    [(vector) #f ] ; If there are no rows, we don't know the number of columns
+    [(vector) #f ] ; If there are no rows, we don't know the number of columns.
     [(vector first-row _ ...) (vector-length first-row)]))
