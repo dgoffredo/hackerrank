@@ -1,37 +1,50 @@
 #lang racket
 
-; This is a naive recusive solution with memoization.
+; This is a naive recusive solution with memoization that additionally
+; takes advantage of the fact that (minimal-merge a b) is the same as
+; (minimal-merge b a). Also, it prints solutions one character at a time, so
+; that you can see the program "working," rather than waiting for the whole
+; solution to be calculated in memory.
+
+; TODO: Nope, doesn't make sense.
 
 (require srfi/67) ; list-compare, min-compare
 
-(define (memoized proc)
-  "Return a procedure that has the same functional behavior as proc, but that
-   stores calculated values in a hash table and returns stored values if they
-   have been calculated already."
+(define (memoized-symmetric two-arg-proc)
+  "Return a procedure that has the same functional behavior as two-arg-proc,
+   but that stores calculated values in a hash table and returns stored values
+   if they have been calculated already, even for the reverse order of the two
+   arguments. Note that this means proc must be symmetric."
   (let ([memo (make-hash)])
-    (lambda args
-      (hash-ref! memo args (lambda () (apply proc args))))))
+    (lambda (a b)
+      (hash-ref memo (list a b)
+        (hash-ref! memo (list b a) (lambda () (two-arg-proc a b)))))))
 
-(define-syntax-rule (define-memoized (name args ...) body ...)
-  (define name (memoized (lambda (args ...) body ...))))
+(define-syntax-rule (define-memoized-symmetric (name args ...) body ...)
+  (define name (memoized-symmetric (lambda (args ...) body ...))))
 
-(define-memoized (minimal-merge left right)
+(define-memoized-symmetric (minimal-merge left right)
   "Return the lexicographically smallest merge of the specified lists of
    characters."
   (cond
-    [(empty? left) right]
-    [(empty? right) left]
+    [(empty? left) (display (apply string right)) right]
+    [(empty? right) (display (apply string left)) left]
     [else
       (match-let* ([(list x left-rest ...) left]
                    [(list y right-rest ...) right]
                    [from-left (lambda ()
+                                (display x)
+                                (flush-output)
                                 (cons x (minimal-merge left-rest right)))]
                    [from-right (lambda ()
+                                  (display y)
+                                  (flush-output)
                                   (cons y (minimal-merge left right-rest)))])
         (cond
           [(char<? x y) (from-left)]
           [(char<? y x) (from-right)]
-          [else (min-compare list-compare (from-left) (from-right))]))]))
+          ; [else (min-compare list-compare (from-left) (from-right))]))]))
+          [else (exit)]))]))
 
 (define (read-all-reversed port)
   "Return a list containing all of the data read from the specified port, but
@@ -62,4 +75,5 @@
          (recur pairs rest))])))
      
 (for ([args (read-input (current-input-port))])
-  (displayln (apply string (apply minimal-merge args))))
+  (apply minimal-merge args)
+  (newline))

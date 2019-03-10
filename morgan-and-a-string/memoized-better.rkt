@@ -1,37 +1,35 @@
 #lang racket
 
-; This is a naive recusive solution with memoization.
+; This is a naive recusive solution with memoization using input indicies
+; as keys rather than the string suffixes themselves.
 
 (require srfi/67) ; list-compare, min-compare
 
-(define (memoized proc)
-  "Return a procedure that has the same functional behavior as proc, but that
-   stores calculated values in a hash table and returns stored values if they
-   have been calculated already."
-  (let ([memo (make-hash)])
-    (lambda args
-      (hash-ref! memo args (lambda () (apply proc args))))))
-
-(define-syntax-rule (define-memoized (name args ...) body ...)
-  (define name (memoized (lambda (args ...) body ...))))
-
-(define-memoized (minimal-merge left right)
+(define (minimal-merge left right)
   "Return the lexicographically smallest merge of the specified lists of
    characters."
-  (cond
-    [(empty? left) right]
-    [(empty? right) left]
-    [else
-      (match-let* ([(list x left-rest ...) left]
-                   [(list y right-rest ...) right]
-                   [from-left (lambda ()
-                                (cons x (minimal-merge left-rest right)))]
-                   [from-right (lambda ()
-                                  (cons y (minimal-merge left right-rest)))])
+  (define memo (make-hash))
+
+  (let recur ([left left] [i 0] [right right] [j 0])
+    (hash-ref! memo (cons i j)
+      (lambda ()
         (cond
-          [(char<? x y) (from-left)]
-          [(char<? y x) (from-right)]
-          [else (min-compare list-compare (from-left) (from-right))]))]))
+          [(empty? left) right]
+          [(empty? right) left]
+          [else
+            (match-let* ([(list x left-rest ...) left]
+                         [(list y right-rest ...) right]
+                         [from-left
+                          (lambda ()
+                            (cons x (recur left-rest (+ i 1) right j)))]
+                         [from-right
+                          (lambda ()
+                            (cons y (recur left i right-rest (+ 1 j))))])
+              (cond
+                [(char<? x y) (from-left)]
+                [(char<? y x) (from-right)]
+                [else 
+                 (min-compare list-compare (from-left) (from-right))]))])))))
 
 (define (read-all-reversed port)
   "Return a list containing all of the data read from the specified port, but

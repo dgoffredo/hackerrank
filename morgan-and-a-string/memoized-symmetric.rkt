@@ -10,7 +10,7 @@
   "Return a procedure that has the same functional behavior as two-arg-proc,
    but that stores calculated values in a hash table and returns stored values
    if they have been calculated already, even for the reverse order of the two
-   arguments. That that this means proc must be symmetric."
+   arguments. Note that this means proc must be symmetric."
   (let ([memo (make-hash)])
     (lambda (a b)
       (hash-ref memo (list a b)
