@@ -13,6 +13,22 @@
   ; Return the lexicographically least list in lists.
   (min-compare list-compare lists ...))
 
+(define (min-list-of-char left right)
+  (min-list left right))
+
+#;(define (min-list-of-char left right)
+ (let recur ([left-suffix left] [right-suffix right])
+   (match (cons left-suffix right-suffix)
+     [(cons '() _) '()]
+     [(cons _ '()) '()]
+     [(cons (cons left-char left-rest) (cons right-char right-rest))
+      (cond
+        [(char<? left-char right-char) left]
+        [(char<? right-char left-char) right]
+        [(eq? left-rest right-rest)    left] ; arbitrary
+        [else
+          (recur left-rest right-rest)])])))
+
 (define (intermediate-results-table left right)
   (let* ([L (string-length left)]
          [R (string-length right)]
@@ -58,7 +74,7 @@
             ; Otherwise, the current characters are the same, so cons either
             ; char (say, left-char) with whichever one of below and rightward
             ; is lexicographically less. 
-            [else (cons left-char (min-list below rightward))]))))
+            [else (cons left-char (min-list-of-char below rightward))]))))
 
     ; Return the table of intermediate results. The answer is element (0, 0).
     table))
