@@ -1,0 +1,55 @@
+
+
+  Strings L and R
+
+  L := L[0] L[1] L[2] L[3] ... L[m - 1]
+
+  R := R[0] R[1] R[2] ... R[n - 1]
+
+  Given (i, j), determine whether L[i:] < R[j:].
+
+Here's the trick:
+
+  saLR := suffix array of (L + R)
+  and ~saLR is the inverse (i.e. index into L+R -> index into saLR)
+
+  saRL := suffix array of (R + L)
+  and ~saRL is the inverse (i.e. index into R+L -> index into saRL)
+
+
+  Then when determining whether L[i:] < R[j:], we can first look at saLR.
+ 
+  Let j'  =  index of R[j:]       in saLR  =  ~saLR[m + j].
+  Let i'  =  index of (L[i:] + R) in saLR  =  ~saLR[i].
+ 
+  If i' < j', then L[i:] must be less than R[j:]. But the negation might not be true.
+  Still, if i' < j', then we're done. L[i:] < R[j:].
+
+  If, on the other hand, j' < i', then we can look at saRL.
+
+  Let i''  =  index of L[i:] in saRL        =  ~saRL[n + i]
+  Let j''  =  index of (R[j:] + L) in saRL  =  ~asRL[j]
+
+  If j'' < i'', then R[j:] must be less than L[i:]. This means that
+  "L[i:] < R[j:]" is _false_.
+
+  However, if i'' < j'', then we've at least determined that there is no mismatch
+  in the first (n - j) characters of L[i:] and R[j:] that would make R[j:]
+  lexicographically less.
+
+  Also, though, we determined earlier that there is no mismatch in the first
+  (m - i) characters of L[i:] and R[j:] that would make L[i:] lexicographically less.
+
+  That means the _shorter_ of L[i:] and R[j:] is the lesser string, and if they have
+  the same length, then they are equal.
+
+
+  So, in summary, to determine whether L[i:] < R[j:]:
+
+  if ~saLR[i] < ~saLR[m + j]
+      return true
+  else if ~asRL[j] < ~saRL[n + i]
+      return false
+  else
+      return m - i < n - j
+   
