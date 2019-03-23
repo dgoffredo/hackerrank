@@ -32,9 +32,9 @@
   (define n (string-length string))
 
   (match n
-    [0 #()]  ; empty string has no suffixes
-    [1 #(1)] ; string of length one has only one suffix: the empty string
-    [_       ; otherwise...
+    [0 #(0)]   ; empty string has one suffix: the end
+    [1 #(0 1)] ; string of length one has two suffixes: itself and the end
+    [_         ; otherwise...
      (define (string-at index)
        (if (< index n)
          (char->integer (string-ref string index))
