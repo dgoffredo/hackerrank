@@ -118,4 +118,5 @@
 
 ; for testing suffix-array
 ; (let ([string (vector-ref (current-command-line-arguments) 0)])
-;   (writeln (suffix-array string #:with-inverse #t)))
+  ; (writeln (suffix-array string #:with-inverse #t)))
+;   (writeln (suffix-array string)))
