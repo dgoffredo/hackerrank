@@ -2,6 +2,10 @@
 
 (provide suffix-array)
 
+; This module provides a suffix array construction procedure that uses the
+; "prefix doubling" algorithm. For a string of length `n`, `suffix-array` runs
+; in `O(n * log n * log n)` time, using `O(n)` space.
+
 (struct suffix
   (rank-high ; integer
    rank-low  ; integer
