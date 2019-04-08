@@ -1,6 +1,8 @@
 #lang racket
 
-(require racket/generator)
+(define-syntax-rule (debug args ...)
+  (void)) ; no debugging output
+  ; (displayln (~a args ...))) ; debugging output
 
 (define (vector-swap! vec i j)
   (let ([temp (vector-ref vec i)])
@@ -34,31 +36,36 @@
           [bucket-offsets (vector-copy bucket-offsets)]
           [num-buckets (vector-length bucket-offsets)])
       (let loop ([i begin])
-        ; (newline)
-        ; (displayln (~a "elements: " elements))
-        ; (displayln (~a "pivots: " current-offsets))
         (unless (= i end)
           (let* ([i-bucket (get-bucket (vector-ref elements i))]
                  [j (+ begin (vector-ref current-offsets i-bucket))])
-            ; (displayln (~a i ", " j ": " (vector-ref elements i)))
+            (debug i ", " j ": " (vector-ref elements i))
+            (debug "with current-offsets: " current-offsets)
+            (debug "with bucket-offsets: " bucket-offsets)
+            (debug "and elements " elements)
             (cond
               ; This element is right where the next element in its bucket
               ; should be; so, good, increment that bucket position and
               ; continue.
               [(= i j)
                (vector-add1! current-offsets i-bucket)
-               (loop (add1 i))]
+               (debug "moving forward and incrementing")
+               (loop (add1 i))
+               ]
               ; This element is already in its bucket; so, good, just continue.
-              [(and (>= i (vector-ref bucket-offsets i-bucket))
+              [(and (>= i (+ begin (vector-ref bucket-offsets i-bucket)))
                     (or (= i-bucket (sub1 num-buckets))
-                        (< i (vector-ref bucket-offsets (add1 i-bucket)))))
+                        (< i (+ begin
+                                (vector-ref bucket-offsets (add1 i-bucket))))))
+               (debug "just moving forward")
                (loop (add1 i))]
               ; This element is not in its bucket. Swap it into the current
               ; bucket, increment that bucket, and then reconsider the same
               ; position (i), since there's a different element there now.
               [else
+               (debug "swapping " i " and " j ", and incrementing")
                (vector-add1! current-offsets i-bucket)
-               (vector-swap! elements i j)
+               (vector-swap! elements i j) 
                (loop i)])))))))
 
 (define (vector-radix-sort! elements alphabet-min alphabet-max)
@@ -69,8 +76,9 @@
     (let* ([alphabet-size (add1 (- alphabet-max alphabet-min))]
            [num-digits (vector-length (vector-ref elements 0))])
       (let recur ([begin 0] [end (vector-length elements)] [digit-index 0])
-        (displayln
-          (~a "looking at indices [" begin ", " end ") at digit " digit-index))
+        (debug
+          "looking at indices [" begin ", " end ") at digit " digit-index)
+        (debug "in " elements)
         ; If the subvector is empty or if we're out of digits, then done.
         (unless (or (= begin end) (= digit-index num-digits))
           (let ([alphabet-counts (make-vector alphabet-size 0)])
@@ -79,7 +87,7 @@
               (let ([digit-value
                      (- (vector-ref element digit-index) alphabet-min)])
                 (vector-add1! alphabet-counts digit-value)))
-            (displayln (~a "alphabet-counts: " alphabet-counts))
+            (debug "alphabet-counts: " alphabet-counts)
             ; calculate offset into subvector for each bucket 
             (let ([bucket-offsets
                    (build-vector alphabet-size
@@ -91,6 +99,7 @@
                             (set! offset
                               (+ offset (vector-ref alphabet-counts (sub1 i))))
                             offset]))))])
+              (debug "bucket-offsets before is " bucket-offsets)
               ; Swap the elements into their respective buckets.
               (vector-partition!
                 elements
@@ -99,17 +108,17 @@
                 bucket-offsets
                 (lambda (element) ; get-bucket :: element -> bucket index
                   (- (vector-ref element digit-index) alphabet-min)))
-              ; TODO: Is this true?
               ; recur for each bucket. `bucket-offsets` now contains the
               ; one-past-the-last index offset for each bucket in `elements`.
-              (displayln (~a "bucket-offsets is " bucket-offsets))
+              (debug "bucket-offsets after is " bucket-offsets)
               (for/fold ([bucket-begin begin])
-                        ([offset (in-vector bucket-offsets)])
+                        ([(offset i) (in-indexed (in-vector bucket-offsets))])
                 (let ([bucket-end (+ begin offset)])
-                  (displayln (~a "begin " begin
-                                 " bucket-begin " bucket-begin
-                                 " offset " offset
-                                 " bucket-end " bucket-end))
+                  (debug "begin " begin
+                             " bucket-begin " bucket-begin
+                             " i " i "/" (vector-length bucket-offsets)
+                             " offset " offset
+                             " bucket-end " bucket-end)
                   (recur bucket-begin bucket-end (add1 digit-index))
                   ; The end of this bucket is the beginning of the next.
                   bucket-end))
