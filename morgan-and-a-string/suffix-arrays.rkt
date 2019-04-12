@@ -7,7 +7,8 @@
 ; possible in constant time, once linear or (in this case, n log^2 n) time has
 ; been spent constructing the suffix arrays.
 
-(require "suffix-array.rkt"
+(require ; "suffix-array-prefix-doubling.rkt"
+         "suffix-array-prefix-doubling-radix.rkt"
          racket/generator)
 
 (define (in-minimal-merge left right)
@@ -16,15 +17,21 @@
   (in-generator
     ; The corner case mentioned above is dealt with by appending to each string
     ; a character greater than any character otherwise in the strings. Since
-    ; these strings consist of all uppercase letters, I use the character "_".
+    ; these strings consist of all uppercase letters, I use the character "[".
     (match-let* ([L (string-length left)]
                  [R (string-length right)]
+                 [alphabet-min #\A] ; by assumption
+                 [alphabet-max #\[] ; by assumption
                  [(cons _ ~saLR) ; inverse "suffix array left-right"
-                  (suffix-array (string-append left right "_")
-                                 #:with-inverse #t)]
+                  (suffix-array (string-append left right "[")
+                                alphabet-min
+                                alphabet-max
+                                #:with-inverse #t)]
                  [(cons _ ~saRL) ; inverse "suffix array right-left"
-                  (suffix-array (string-append right left "_")
-                                 #:with-inverse #t)])
+                  (suffix-array (string-append right left "[")
+                                alphabet-min
+                                alphabet-max
+                                #:with-inverse #t)])
       (let loop ([i 0] [j 0])
         ; i = L and j = R are end cases, so handle all the combinations of that
         ; first. Then the common case is the last one, where neither string is

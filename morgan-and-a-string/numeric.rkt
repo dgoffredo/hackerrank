@@ -1,5 +1,7 @@
 #lang racket
 
+(provide integer->vector)
+
 (require srfi/43) ; vector-reverse-copy
 
 (define (integer->vector nonnegative-integer

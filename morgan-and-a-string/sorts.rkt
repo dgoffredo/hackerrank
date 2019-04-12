@@ -1,5 +1,8 @@
 #lang racket
 
+(provide vector-radix-sort!
+         radix-sort)
+
 (define-syntax-rule (debug args ...)
   (void)) ; no debugging output
   ; (displayln (~a args ...))) ; debugging output
@@ -68,24 +71,30 @@
                (vector-swap! elements i j) 
                (loop i)])))))))
 
-(define (vector-radix-sort! elements alphabet-min alphabet-max)
+(define (vector-radix-sort! elements
+                            alphabet-min 
+                            alphabet-max 
+                            [get-element identity])
   "TODO: document"
   ; If there are no elements, then we're done.
   (unless (empty? elements)
     ; If there are elements, then it's ok to check the length of the first.
     (let* ([alphabet-size (add1 (- alphabet-max alphabet-min))]
-           [num-digits (vector-length (vector-ref elements 0))])
+           [num-digits (vector-length (get-element (vector-ref elements 0)))])
+      (debug "alphabet-min: " alphabet-min " alphabet-max: " alphabet-max)
       (let recur ([begin 0] [end (vector-length elements)] [digit-index 0])
         (debug
           "looking at indices [" begin ", " end ") at digit " digit-index)
-        (debug "in " elements)
+        (debug "in " (vector-map get-element elements))
         ; If the subvector is empty or if we're out of digits, then done.
         (unless (or (= begin end) (= digit-index num-digits))
           (let ([alphabet-counts (make-vector alphabet-size 0)])
             ; count the number of elements in each bucket
             (for ([element (in-vector elements begin end)])
-              (let ([digit-value
-                     (- (vector-ref element digit-index) alphabet-min)])
+              (let* ([element (get-element element)]
+                     [digit-value
+                      (- (vector-ref element digit-index) alphabet-min)])
+                (debug "digit-value is " digit-value)
                 (vector-add1! alphabet-counts digit-value)))
             (debug "alphabet-counts: " alphabet-counts)
             ; calculate offset into subvector for each bucket 
@@ -107,7 +116,8 @@
                 end 
                 bucket-offsets
                 (lambda (element) ; get-bucket :: element -> bucket index
-                  (- (vector-ref element digit-index) alphabet-min)))
+                  (let ([element (get-element element)])
+                    (- (vector-ref element digit-index) alphabet-min))))
               ; recur for each bucket. `bucket-offsets` now contains the
               ; one-past-the-last index offset for each bucket in `elements`.
               (debug "bucket-offsets after is " bucket-offsets)
