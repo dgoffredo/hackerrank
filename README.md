@@ -10,8 +10,8 @@ Practice!
 
 What
 ----
-These are my attempts at "hard" problems available on
-[hackerrank](hackerrank.com). Each directory within this repository is a
-"challenge" named according to how it appears in the relevant URL, e.g.
+These are my attempts at problems available on [hackerrank](hackerrank.com).
+Each directory within this repository is a "challenge" named according to
+how it appears in the relevant URL, e.g.
 [determining-dna-health](determining-dna-health) refers to the problem
-described in https://www.hackerrank.com/challenges/determining-dna-health .
+described in https://www.hackerrank.com/challenges/determining-dna-health.
