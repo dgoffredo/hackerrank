@@ -1,8 +1,8 @@
 .PHONY: run
 
-run: quadratic input-4
-	./quadratic <input-4
+run: linear input-4
+	./linear <input-4
 
-quadratic: quadratic.cpp
-	g++ -o quadratic quadratic.cpp
+linear: linear.cpp
+	g++ -o linear linear.cpp
  

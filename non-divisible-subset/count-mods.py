@@ -53,7 +53,7 @@ def largest_nondivisible_subset_size(sequence, divisor):
 
 
 def read_row(file):
-    return [int(word) for word in sys.stdin.readline().split()]
+    return [int(word) for word in file.readline().split()]
 
 
 size, divisor = read_row(sys.stdin)
